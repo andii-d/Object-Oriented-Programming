@@ -59,7 +59,7 @@ public class Typist
     {
         if (turns > 0) {
             this.isBurntOut = true;
-            this.burnoutTurnsRemaining = turns - 1; // Decrease by one immediately since the first turn of burnout starts now;
+            this.burnoutTurnsRemaining = turns;
         }
     }
 
@@ -159,7 +159,9 @@ public class Typist
      */
     public void typeCharacter()
     {
-        this.progress++;
+        if (!this.isBurntOut) {
+            this.progress++;
+        }
     }
 
     /**
@@ -169,9 +171,10 @@ public class Typist
      * @param amount the number of characters to slide back (must be positive)
      */
     public void slideBack(int amount)
-    {
+    {   // Only slide back if the amount is positive to prevent accidental progress increase
         if (amount > 0) {
-            this.progress = Math.max(0, this.progress - amount);
+            // Use Math.max to ensure progress does not go below zero
+            this.progress = Math.max(0, this.progress - amount); 
         }
     }
 
@@ -183,13 +186,10 @@ public class Typist
      */
     public void setAccuracy(double newAccuracy)
     {
-        if (newAccuracy < 0.0) {
-            this.typistAccuracy = 0.0;
-        } else if (newAccuracy > 1.0) {
-            this.typistAccuracy = 1.0;
-        } else {
-            this.typistAccuracy = newAccuracy;
-        }
+        // Ensure the accuracy stays witin 0.0 - 1.0 by clamping the values
+        if (newAccuracy < 0.0) this.typistAccuracy = 0.0;
+        else if (newAccuracy > 1.0) this.typistAccuracy = 1.0;
+        else this.typistAccuracy = newAccuracy;
     }
 
     /**
