@@ -75,45 +75,61 @@ public class TypingRace
      */
     public void startRace()
     {
-        boolean finished = false;
+        Typist winner = null;
 
+        // Ensure type safety by checking for null typists before starting the race
+        if (seat1Typist == null && seat2Typist == null && seat3Typist == null) {
+            System.out.println("Cannot start race: no typists are seated.");
+            return; // Exit early if there are no typists
+        }
+        
         // Reset all typists to the start of the passage
-        // (Ty was in a hurry here)
-        seat1Typist.resetToStart();
-        seat2Typist.resetToStart();
-        seat3Typist.resetToStart(); // Add the third seat to the reset process
-        while (!finished)
+        if (seat1Typist != null) seat1Typist.resetToStart();
+        if (seat2Typist != null) seat2Typist.resetToStart();
+        if (seat3Typist != null) seat3Typist.resetToStart();
+
+        while (winner == null)
         {
             // Advance each typist by one turn
             advanceTypist(seat1Typist);
-            advanceTypist(seat2Typist);
-            advanceTypist(seat3Typist);
+            if (raceFinishedBy(seat1Typist))
+            {
+                winner = seat1Typist;
+            }
+            else
+            {
+                advanceTypist(seat2Typist);
+                if (raceFinishedBy(seat2Typist))
+                {
+                    winner = seat2Typist;
+                }
+                else
+                {
+                    advanceTypist(seat3Typist);
+                    if (raceFinishedBy(seat3Typist))
+                    {
+                        winner = seat3Typist;
+                    }
+                }
+            }
 
             // Print the current state of the race
             printRace();
 
-            // Check if any typist has finished the passage
-            if ( raceFinishedBy(seat1Typist) || raceFinishedBy(seat2Typist) || raceFinishedBy(seat3Typist) )
+            try
             {
-                finished = true;
-            }
-
-            // Wait 200ms between turns so the animation is visible
-            try {
                 TimeUnit.MILLISECONDS.sleep(200);
-            } catch (Exception e) {}
+            }
+            catch (InterruptedException e)
+            {
+                Thread.currentThread().interrupt();
+                System.out.println("Race interrupted.");
+                return;
+            }
         }
-
         // TODO (Task 2a): Print the winner's name here
-        
-        if (raceFinishedBy(seat1Typist)) {
-            System.out.println("The winner is " + seat1Typist.getName() + "!");
-        } else if (raceFinishedBy(seat2Typist)) {
-            System.out.println("The winner is " + seat2Typist.getName() + "!");
-        } else if (raceFinishedBy(seat3Typist)) {
-            System.out.println("The winner is " + seat3Typist.getName() + "!");
-        }
-
+        System.out.println("And the winner is... " + winner.getName() + "!");
+        System.out.printf("Final accuracy: %.2f%n", winner.getAccuracy());
     }
 
     /**
@@ -201,7 +217,7 @@ public class TypingRace
 
         multiplePrint('=', passageLength + 3);
         System.out.println();
-        System.out.println("  [zz] = burnt out    [<] = just mistyped");
+        System.out.println("  [~] = burnt out    [<] = just mistyped");
     }
 
     /**
@@ -209,13 +225,14 @@ public class TypingRace
      *
      * Examples:
      *   |          ⌨           | TURBOFINGERS (Accuracy: 0.85)
-     *   |    [zz]              | HUNT_N_PECK  (Accuracy: 0.40) BURNT OUT (2 turns)
+     *   |    [~]              | HUNT_N_PECK  (Accuracy: 0.40) BURNT OUT (2 turns)
      *
      * Note: Ty forgot to show when a typist has just mistyped. That would
      * be a nice improvement — perhaps a [<] marker after their symbol.
      *
      * @param theTypist the typist whose lane to print
      */
+    
     private void printSeat(Typist theTypist)
     {
         int spacesBefore = theTypist.getProgress();
