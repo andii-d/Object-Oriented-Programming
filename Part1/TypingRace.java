@@ -81,7 +81,7 @@ public class TypingRace
         // (Ty was in a hurry here)
         seat1Typist.resetToStart();
         seat2Typist.resetToStart();
-        seat3Typist.resetToStart();
+        seat3Typist.resetToStart(); // Add the third seat to the reset process
         while (!finished)
         {
             // Advance each typist by one turn
