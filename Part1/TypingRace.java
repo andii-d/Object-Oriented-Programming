@@ -38,6 +38,11 @@ public class TypingRace
      */
     public TypingRace(int passageLength)
     {
+        if (passageLength <= 0)
+        {
+            throw new IllegalArgumentException("passageLength must be > 0");
+        }
+    
         this.passageLength = passageLength;
         seat1Typist = null;
         seat2Typist = null;
@@ -45,7 +50,6 @@ public class TypingRace
         justMistypedSeat1 = false;
         justMistypedSeat2 = false;
         justMistypedSeat3 = false;
-
     }
 
     /**
@@ -56,6 +60,22 @@ public class TypingRace
      */
     public void addTypist(Typist theTypist, int seatNumber)
     {
+        // Ensure the same typist isn't seated in multiple seats, and that symbols are unique
+        if (theTypist != null &&
+           ((seat1Typist == theTypist && seatNumber != 1) ||
+            (seat2Typist == theTypist && seatNumber != 2) ||
+            (seat3Typist == theTypist && seatNumber != 3)))
+        {
+            System.out.println("Cannot seat typist: same typist already seated.");
+            return;
+        }
+        if (theTypist != null && symbolAlreadyUsed(theTypist.getSymbol(), theTypist, seatNumber))
+        {
+            System.out.println("Cannot seat typist: symbol already in use.");
+            return;
+        }
+        
+        // Seat the typist in the specified seat
         if (seatNumber == 1)
         {
             seat1Typist = theTypist;
@@ -266,14 +286,14 @@ public class TypingRace
             System.out.print("| | (empty seat)");
             return;
         }
-    
+
         int renderedProgress = Math.min(theTypist.getProgress(), passageLength);
         int spacesBefore = renderedProgress;
         int spacesAfter  = passageLength - renderedProgress;
-    
+
         System.out.print('|');
         multiplePrint(' ', spacesBefore);
-    
+
         // Always show the typist's symbol so they can be identified on screen.
         // Append ~ when burnt out so the state is visible without hiding identity.
         System.out.print(theTypist.getSymbol());
@@ -282,17 +302,17 @@ public class TypingRace
             System.out.print('~');
             spacesAfter = Math.max(0, spacesAfter - 1);
         }
-    
+
         if (justMistyped)
         {
             System.out.print(" [<]");
             spacesAfter = Math.max(0, spacesAfter - 4);
         }
-    
+
         multiplePrint(' ', Math.max(0, spacesAfter));
         System.out.print('|');
         System.out.print(' ');
-    
+
         // Print name and accuracy
         if (theTypist.isBurntOut())
         {
@@ -305,7 +325,7 @@ public class TypingRace
             System.out.print(theTypist.getName()
                 + " (Accuracy: " + String.format("%.2f", theTypist.getAccuracy()) + ")");
         }
-    
+
         if (justMistyped)
         {
             System.out.print(" \u2190 just mistyped");
@@ -326,5 +346,13 @@ public class TypingRace
             System.out.print(aChar);
             i = i + 1;
         }
+    }
+
+    private boolean symbolAlreadyUsed(char symbol, Typist incoming, int targetSeat)
+    {
+        if (seat1Typist != null && seat1Typist != incoming && targetSeat != 1 && seat1Typist.getSymbol() == symbol) return true;
+        if (seat2Typist != null && seat2Typist != incoming && targetSeat != 2 && seat2Typist.getSymbol() == symbol) return true;
+        if (seat3Typist != null && seat3Typist != incoming && targetSeat != 3 && seat3Typist.getSymbol() == symbol) return true;
+        return false;
     }
 }
