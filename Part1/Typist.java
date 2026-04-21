@@ -23,9 +23,7 @@ public class Typist
     private int progress;
     private boolean isBurntOut;
     private int burnoutTurnsRemaining;
-
-
-
+    
 
     // Constructor of class Typist
     /**
@@ -128,14 +126,15 @@ public class Typist
      * @return burnout turns remaining as a non-negative integer
      */
     public int getBurnoutTurnsRemaining()
-    {
-        return this.burnoutTurnsRemaining;
+    { 
+        return this.isBurntOut ? this.burnoutTurnsRemaining : 0;
     }
 
     /**
      * Resets the typist to their initial state, ready for a new race.
      * Progress returns to zero, burnout is cleared entirely.
      */
+    // OPEN BUG: Null typist crashes the program. This method should be called on a valid typist object, not null.
     public void resetToStart()
     {
         this.progress = 0;

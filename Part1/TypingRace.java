@@ -160,12 +160,21 @@ public class TypingRace
             }
         }
 
+        System.out.println("And the winner is... " + winner.getName() + "!");
+
         startingAccuracy = winner.getAccuracy();
         winner.setAccuracy(winner.getAccuracy() + 0.02); // winner improvement
 
-        System.out.println("And the winner is... " + winner.getName() + "!");
-        System.out.printf("Final accuracy: %.2f (improved from %.2f)%n",
-            winner.getAccuracy(), startingAccuracy);
+        if (winner.getAccuracy() > startingAccuracy)
+        {
+            System.out.printf("Final accuracy: %.2f (improved from %.2f)%n",
+                winner.getAccuracy(), startingAccuracy);
+        }
+        else
+        {
+            System.out.printf("Final accuracy: %.2f (unchanged from %.2f)%n",
+                winner.getAccuracy(), startingAccuracy);
+        }
     }
 
     /**
@@ -316,9 +325,11 @@ public class TypingRace
         // Print name and accuracy
         if (theTypist.isBurntOut())
         {
+            int turns = theTypist.getBurnoutTurnsRemaining();
+            String unit = (turns == 1) ? "turn" : "turns";
             System.out.print(theTypist.getName()
                 + " (Accuracy: " + String.format("%.2f", theTypist.getAccuracy()) + ")"
-                + " BURNT OUT (" + theTypist.getBurnoutTurnsRemaining() + " turns)");
+                + " BURNT OUT (" + turns + " " + unit + ")");
         }
         else
         {
