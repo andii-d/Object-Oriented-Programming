@@ -9,6 +9,7 @@ import java.util.Random;
  */
 public class TypingRaceEngine {
     public static final double TURN_SECONDS = 0.35;
+    private static final int BASE_SLIDE_BACK = 2;
 
     private final RaceConfig config;
     private final List<GuiTypist> typists;
@@ -25,7 +26,11 @@ public class TypingRaceEngine {
 
         for (int i = 0; i < config.getSeatCount(); i++) {
             TypistSetup setup = config.getTypists().get(i);
-            typists.add(new GuiTypist(setup, setup.calculateBaseAccuracy()));
+            double startingAccuracy = setup.calculateBaseAccuracy();
+            if (config.isNightShiftEnabled()) {
+                startingAccuracy -= 0.05;
+            }
+            typists.add(new GuiTypist(setup, clamp(startingAccuracy)));
         }
     }
 
@@ -56,14 +61,28 @@ public class TypingRaceEngine {
         turn++;
 
         for (GuiTypist typist : typists) {
+            typist.setJustMistyped(false);
             if (typist.isFinished()) {
                 continue;
             }
 
-            boolean typedCorrectly = random.nextDouble() < typist.getCurrentAccuracy();
+            double effectiveAccuracy = typist.getCurrentAccuracy();
+            if (config.isCaffeineModeEnabled() && turn <= 10) {
+                effectiveAccuracy += 0.08;
+            }
+            effectiveAccuracy = clamp(effectiveAccuracy);
+
+            boolean typedCorrectly = random.nextDouble() < effectiveAccuracy;
             typist.registerKeystroke(typedCorrectly);
             if (typedCorrectly) {
                 typist.typeCharacter();
+            } else {
+                int slideBack = config.isAutocorrectEnabled()
+                        ? Math.max(1, BASE_SLIDE_BACK / 2)
+                        : BASE_SLIDE_BACK;
+                typist.slideBack(slideBack);
+                typist.addMistype();
+                typist.setJustMistyped(true);
             }
 
             if (typist.getProgress() >= getPassageLength()) {
@@ -72,6 +91,10 @@ public class TypingRaceEngine {
                 break;
             }
         }
+    }
+
+    private double clamp(double value) {
+        return Math.max(0.0, Math.min(1.0, value));
     }
 
     /**
