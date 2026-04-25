@@ -12,7 +12,7 @@ import javax.swing.Timer;
  */
 public class RacePanel extends JPanel {
     public interface RaceFinishedListener {
-        void onRaceFinished();
+        void onRaceFinished(TypingRaceEngine engine);
     }
 
     private final JLabel statusLabel;
@@ -58,7 +58,7 @@ public class RacePanel extends JPanel {
             stopTimerIfNeeded();
             pauseResumeButton.setEnabled(false);
             if (finishedListener != null) {
-                finishedListener.onRaceFinished();
+                finishedListener.onRaceFinished(engine);
             }
         }
     }

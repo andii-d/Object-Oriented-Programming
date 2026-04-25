@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 
@@ -71,5 +72,39 @@ public class TypingRaceEngine {
                 break;
             }
         }
+    }
+
+    /**
+     * Builds a basic ordered results list for the Results tab.
+     */
+    public List<RaceResult> buildResults() {
+        List<GuiTypist> ordered = new ArrayList<>(typists);
+        ordered.sort(Comparator
+                .comparingInt(GuiTypist::getProgress).reversed()
+                .thenComparing(GuiTypist::getName));
+
+        List<RaceResult> results = new ArrayList<>();
+        for (int i = 0; i < ordered.size(); i++) {
+            GuiTypist typist = ordered.get(i);
+            int finishTurn = typist.getFinishTurn() > 0 ? typist.getFinishTurn() : Math.max(1, turn);
+            double minutes = Math.max(0.01, (finishTurn * TURN_SECONDS) / 60.0);
+            double wordsTyped = Math.min(typist.getProgress(), getPassageLength()) / 5.0;
+            double wpm = wordsTyped / minutes;
+            double accuracyPercent = typist.getTotalKeystrokes() == 0
+                    ? 100.0
+                    : (100.0 * typist.getCorrectKeystrokes() / typist.getTotalKeystrokes());
+
+            results.add(new RaceResult(
+                    typist.getName(),
+                    typist.getSymbol(),
+                    i + 1,
+                    wpm,
+                    accuracyPercent,
+                    typist.getBurnoutCount(),
+                    typist.getStartingAccuracy(),
+                    typist.getCurrentAccuracy()
+            ));
+        }
+        return results;
     }
 }
