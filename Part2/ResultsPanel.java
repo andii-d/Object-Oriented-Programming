@@ -11,7 +11,7 @@ import javax.swing.JTable;
 import javax.swing.table.DefaultTableModel;
 
 /**
- * Early results panel showing winner + core metrics.
+ * Shows per-race results and metrics after a race finishes.
  */
 public class ResultsPanel extends JPanel {
     private final JLabel winnerLabel;
@@ -19,6 +19,11 @@ public class ResultsPanel extends JPanel {
     private final JTable table;
     private final Runnable newRaceCallback;
 
+    /**
+     * Builds the results view.
+     *
+     * @param newRaceCallback callback used by "Configure Next Race" button
+     */
     public ResultsPanel(Runnable newRaceCallback) {
         this.newRaceCallback = newRaceCallback;
         setLayout(new BorderLayout(8, 8));
@@ -46,6 +51,11 @@ public class ResultsPanel extends JPanel {
         add(bottom, BorderLayout.SOUTH);
     }
 
+    /**
+     * Replaces table contents with the latest race results.
+     *
+     * @param results ordered list of race results (winner at index 0)
+     */
     public void showResults(List<RaceResult> results) {
         tableModel.setRowCount(0);
         if (results.isEmpty()) {
@@ -74,10 +84,16 @@ public class ResultsPanel extends JPanel {
         }
     }
 
+    /**
+     * Formats decimals consistently for table display.
+     */
     private String format(double value) {
         return String.format(Locale.US, "%.2f", value);
     }
 
+    /**
+     * Formats signed decimal values (e.g. +0.02, -0.01).
+     */
     private String signed(double value) {
         return String.format(Locale.US, "%+.2f", value);
     }

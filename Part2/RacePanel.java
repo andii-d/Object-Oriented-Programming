@@ -17,9 +17,15 @@ import javax.swing.text.DefaultHighlighter;
 import javax.swing.text.Highlighter;
 
 /**
- * Animated race panel with one lane per typist.
+ * Animated race panel.
+ *
+ * This panel owns a Swing Timer that advances the engine turn-by-turn and
+ * redraws each typist lane with progress highlights.
  */
 public class RacePanel extends JPanel {
+    /**
+     * Callback fired when the engine reports that the race has finished.
+     */
     public interface RaceFinishedListener {
         void onRaceFinished(TypingRaceEngine engine);
     }
@@ -34,6 +40,9 @@ public class RacePanel extends JPanel {
     private RaceFinishedListener raceFinishedListener;
     private Timer timer;
 
+    /**
+     * Creates an empty race panel. Race content is populated in startRace().
+     */
     public RacePanel() {
         this.laneTextByTypist = new HashMap<>();
         this.laneStatusByTypist = new HashMap<>();
@@ -55,6 +64,12 @@ public class RacePanel extends JPanel {
         add(controls, BorderLayout.SOUTH);
     }
 
+    /**
+     * Starts a new race animation.
+     *
+     * @param engine engine containing race state
+     * @param listener callback for race completion
+     */
     public void startRace(TypingRaceEngine engine, RaceFinishedListener listener) {
         stopTimerIfNeeded();
         this.engine = engine;
@@ -87,7 +102,6 @@ public class RacePanel extends JPanel {
             laneTextByTypist.put(typist, passagePane);
             laneStatusByTypist.put(typist, statusLabel);
         }
-
         updateView();
         revalidate();
         repaint();
@@ -96,6 +110,9 @@ public class RacePanel extends JPanel {
         timer.start();
     }
 
+    /**
+     * Timer tick: one engine turn + redraw + finish handling.
+     */
     private void onTick() {
         if (engine == null) {
             return;
@@ -111,6 +128,9 @@ public class RacePanel extends JPanel {
         }
     }
 
+    /**
+     * Redraws all lanes from current engine state.
+     */
     private void updateView() {
         if (engine == null) {
             return;
@@ -129,17 +149,17 @@ public class RacePanel extends JPanel {
         }
     }
 
+    /**
+     * Highlights completed text and current cursor position for one typist.
+     */
     private void applyHighlights(JTextPane pane, GuiTypist typist, int passageLength) {
         int progress = Math.max(0, Math.min(typist.getProgress(), passageLength));
         Highlighter highlighter = pane.getHighlighter();
         highlighter.removeAllHighlights();
         try {
             if (progress > 0) {
-                highlighter.addHighlight(
-                        0,
-                        progress,
-                        new DefaultHighlighter.DefaultHighlightPainter(lighten(typist.getColor()))
-                );
+                Color completionColor = lighten(typist.getColor());
+                highlighter.addHighlight(0, progress, new DefaultHighlighter.DefaultHighlightPainter(completionColor));
             }
             if (progress < passageLength) {
                 highlighter.addHighlight(
@@ -148,10 +168,15 @@ public class RacePanel extends JPanel {
                         new DefaultHighlighter.DefaultHighlightPainter(new Color(255, 240, 120))
                 );
             }
+            // If highlight indexes are briefly invalid during rapid UI updates,
+            // we safely skip this frame and continue on the next tick.
         } catch (BadLocationException ignored) {
         }
     }
 
+    /**
+     * Builds the lane status line shown under each passage.
+     */
     private String buildStatus(GuiTypist typist, int passageLength) {
         if (typist.isFinished()) {
             return "Finished! Progress " + passageLength + "/" + passageLength;
@@ -166,6 +191,9 @@ public class RacePanel extends JPanel {
         return "Typing... Progress " + typist.getProgress() + "/" + passageLength;
     }
 
+    /**
+     * Lightens a base color for "completed text" highlighting.
+     */
     private Color lighten(Color base) {
         return new Color(
                 Math.min(255, base.getRed() + 120),
@@ -174,6 +202,9 @@ public class RacePanel extends JPanel {
         );
     }
 
+    /**
+     * Pauses or resumes the race timer.
+     */
     private void togglePause() {
         if (timer == null) {
             return;
@@ -187,6 +218,9 @@ public class RacePanel extends JPanel {
         }
     }
 
+    /**
+     * Stops and clears the current timer if one exists.
+     */
     private void stopTimerIfNeeded() {
         if (timer != null) {
             timer.stop();

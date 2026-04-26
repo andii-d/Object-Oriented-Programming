@@ -14,10 +14,16 @@ import javax.swing.JTextArea;
 import javax.swing.table.DefaultTableModel;
 
 /**
- * Initial leaderboard view (table-only slice).
+ * Option A leaderboard view panel.
+ *
+ * Contains:
+ * - cumulative ranking table
+ * - side-by-side metric comparison
+ * - per-typist historical race log
  */
 public class LeaderboardPanel extends JPanel {
-    private final DefaultTableModel model;
+    private final DefaultTableModel leaderboardModel;
+    private final JTable leaderboardTable;
     private final JComboBox<String> compareACombo;
     private final JComboBox<String> compareBCombo;
     private final JComboBox<String> metricCombo;
@@ -26,11 +32,14 @@ public class LeaderboardPanel extends JPanel {
     private final JTextArea historyArea;
     private LeaderboardManager manager;
 
+    /**
+     * Builds leaderboard UI components.
+     */
     public LeaderboardPanel() {
         setLayout(new BorderLayout(8, 8));
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        model = new DefaultTableModel(
+        leaderboardModel = new DefaultTableModel(
                 new Object[]{"Rank", "Name", "Title", "Points", "Best WPM", "Races", "Avg Accuracy %", "Burnouts", "Badges"},
                 0
         ) {
@@ -39,7 +48,8 @@ public class LeaderboardPanel extends JPanel {
                 return false;
             }
         };
-        add(new JScrollPane(new JTable(model)), BorderLayout.CENTER);
+        leaderboardTable = new JTable(leaderboardModel);
+        add(new JScrollPane(leaderboardTable), BorderLayout.CENTER);
 
         JPanel bottom = new JPanel(new BorderLayout(8, 8));
 
@@ -75,11 +85,16 @@ public class LeaderboardPanel extends JPanel {
         add(bottom, BorderLayout.SOUTH);
     }
 
+    /**
+     * Reloads all leaderboard widgets from latest manager data.
+     *
+     * @param manager leaderboard service
+     */
     public void refresh(LeaderboardManager manager) {
         this.manager = manager;
-        model.setRowCount(0);
+        leaderboardModel.setRowCount(0);
         for (LeaderboardManager.LeaderboardRow row : manager.getLeaderboardRows()) {
-            model.addRow(new Object[]{
+            leaderboardModel.addRow(new Object[]{
                     row.getRank(),
                     row.getName(),
                     row.getTitle(),
@@ -95,10 +110,9 @@ public class LeaderboardPanel extends JPanel {
         refreshHistoryArea();
     }
 
-    private String format(double value) {
-        return String.format(Locale.US, "%.2f", value);
-    }
-
+    /**
+     * Rebuilds typist selector combo boxes.
+     */
     private void refillTypistSelectors(Set<String> names) {
         compareACombo.removeAllItems();
         compareBCombo.removeAllItems();
@@ -110,6 +124,9 @@ public class LeaderboardPanel extends JPanel {
         }
     }
 
+    /**
+     * Compares selected typists on selected metric.
+     */
     private void compareTypists() {
         if (manager == null || compareACombo.getSelectedItem() == null || compareBCombo.getSelectedItem() == null) {
             compareResultLabel.setText("Need at least two typists.");
@@ -124,6 +141,9 @@ public class LeaderboardPanel extends JPanel {
         compareResultLabel.setText(first + ": " + format(firstValue) + " | " + second + ": " + format(secondValue));
     }
 
+    /**
+     * Shows race history for currently selected typist.
+     */
     private void refreshHistoryArea() {
         historyArea.setText("");
         if (manager == null || historyCombo.getSelectedItem() == null) {
@@ -135,7 +155,6 @@ public class LeaderboardPanel extends JPanel {
             historyArea.setText("No races recorded yet for " + name + ".");
             return;
         }
-
         StringBuilder builder = new StringBuilder();
         int raceNumber = 1;
         Double previousWpm = null;
@@ -155,6 +174,16 @@ public class LeaderboardPanel extends JPanel {
         historyArea.setText(builder.toString());
     }
 
+    /**
+     * Formats decimals consistently for display.
+     */
+    private String format(double value) {
+        return String.format(Locale.US, "%.2f", value);
+    }
+
+    /**
+     * Displays metric direction versus the previous race to make trends obvious.
+     */
     private String trend(double current, Double previous) {
         if (previous == null) {
             return " (baseline)";
