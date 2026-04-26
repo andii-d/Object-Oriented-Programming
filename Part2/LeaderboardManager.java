@@ -1,4 +1,5 @@
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -25,6 +26,7 @@ public class LeaderboardManager {
             entry.bestWpm = Math.max(entry.bestWpm, result.getWpm());
             entry.totalBurnouts += result.getBurnoutCount();
             entry.totalAccuracyPercent += result.getAccuracyPercent();
+            entry.history.add(new RaceHistory(result));
 
             if (result.getFinishPosition() == 1) {
                 entry.consecutiveWins++;
@@ -91,6 +93,37 @@ public class LeaderboardManager {
             ));
         }
         return rows;
+    }
+
+    public Set<String> getTypistNames() {
+        return new LinkedHashSet<>(entries.keySet());
+    }
+
+    public List<RaceHistory> getHistory(String typistName) {
+        LeaderboardEntry entry = entries.get(typistName);
+        if (entry == null) {
+            return Collections.emptyList();
+        }
+        return Collections.unmodifiableList(entry.history);
+    }
+
+    public double getMetricValue(String typistName, String metric) {
+        LeaderboardEntry entry = entries.get(typistName);
+        if (entry == null) {
+            return 0.0;
+        }
+        switch (metric) {
+            case "Points":
+                return entry.totalPoints;
+            case "Best WPM":
+                return entry.bestWpm;
+            case "Average Accuracy %":
+                return entry.getAverageAccuracy();
+            case "Total Burnouts":
+                return entry.totalBurnouts;
+            default:
+                return 0.0;
+        }
     }
 
     public static class LeaderboardRow {
@@ -163,6 +196,42 @@ public class LeaderboardManager {
         }
     }
 
+    public static class RaceHistory {
+        private final int finishPosition;
+        private final double wpm;
+        private final double accuracyPercent;
+        private final int burnoutCount;
+        private final int points;
+
+        public RaceHistory(RaceResult result) {
+            this.finishPosition = result.getFinishPosition();
+            this.wpm = result.getWpm();
+            this.accuracyPercent = result.getAccuracyPercent();
+            this.burnoutCount = result.getBurnoutCount();
+            this.points = result.getRacePoints();
+        }
+
+        public int getFinishPosition() {
+            return finishPosition;
+        }
+
+        public double getWpm() {
+            return wpm;
+        }
+
+        public double getAccuracyPercent() {
+            return accuracyPercent;
+        }
+
+        public int getBurnoutCount() {
+            return burnoutCount;
+        }
+
+        public int getPoints() {
+            return points;
+        }
+    }
+
     private static class LeaderboardEntry {
         private final String name;
         private int totalPoints;
@@ -173,10 +242,12 @@ public class LeaderboardManager {
         private int consecutiveWins;
         private int noBurnoutStreak;
         private final Set<String> badges;
+        private final List<RaceHistory> history;
 
         private LeaderboardEntry(String name) {
             this.name = name;
             this.badges = new LinkedHashSet<>();
+            this.history = new ArrayList<>();
         }
 
         private double getAverageAccuracy() {
