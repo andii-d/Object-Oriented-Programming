@@ -7,7 +7,9 @@ import java.awt.GridLayout;
 import java.awt.Insets;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import javax.swing.BoxLayout;
 import javax.swing.BorderFactory;
@@ -51,10 +53,12 @@ public class SetupPanel extends JPanel {
     private final JCheckBox nightShiftCheckBox;
     private final JCheckBox rankImpactCheckBox;
     private final List<TypistRow> typistRows;
+    private final Map<String, String> presetPassages;
 
     public SetupPanel(RaceStartListener listener) {
         this.listener = listener;
         this.typistRows = new ArrayList<>();
+        this.presetPassages = buildPresetPassages();
         setLayout(new BorderLayout(8, 8));
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
@@ -127,7 +131,22 @@ public class SetupPanel extends JPanel {
         add(bottom, BorderLayout.SOUTH);
 
         seatCountSpinner.addChangeListener(e -> updateEnabledRows());
+        passagePresetCombo.addActionListener(e -> updateCustomPassageState());
+        updateCustomPassageState();
         updateEnabledRows();
+    }
+
+    private Map<String, String> buildPresetPassages() {
+        Map<String, String> presets = new LinkedHashMap<>();
+        presets.put("Short", "The quick brown fox jumps over the lazy dog.");
+        presets.put("Medium", "Typing races reward rhythm, precision, and calm under pressure.");
+        presets.put("Long", "In a typing race, consistency beats chaos. Stay accurate, recover from mistakes, and keep momentum.");
+        return presets;
+    }
+
+    private void updateCustomPassageState() {
+        boolean customSelected = "Custom".equals(passagePresetCombo.getSelectedItem());
+        customPassageArea.setEnabled(customSelected);
     }
 
     private void startRace() {
@@ -139,12 +158,8 @@ public class SetupPanel extends JPanel {
                 JOptionPane.showMessageDialog(this, "Please enter a custom passage.");
                 return;
             }
-        } else if ("Medium".equals(preset)) {
-            passage = "Typing races reward rhythm, precision, and calm under pressure.";
-        } else if ("Long".equals(preset)) {
-            passage = "In a typing race, consistency beats chaos. Stay accurate, recover from mistakes, and keep momentum.";
         } else {
-            passage = "The quick brown fox jumps over the lazy dog.";
+            passage = presetPassages.getOrDefault(preset, presetPassages.get("Short"));
         }
 
         int seatCount = (int) seatCountSpinner.getValue();
