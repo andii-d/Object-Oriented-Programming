@@ -10,9 +10,12 @@ import java.util.Random;
 public class TypingRaceEngine {
     public static final double TURN_SECONDS = 0.35;
     private static final int BASE_SLIDE_BACK = 2;
+    private static final double BASE_BURNOUT_CHANCE = 0.05;
+    private static final int MAX_TURNS = 3000;
 
     private final RaceConfig config;
     private final List<GuiTypist> typists;
+    private final List<GuiTypist> finishOrder;
     private final Random random;
     private int turn;
     private boolean finished;
@@ -20,6 +23,7 @@ public class TypingRaceEngine {
     public TypingRaceEngine(RaceConfig config) {
         this.config = config;
         this.typists = new ArrayList<>();
+        this.finishOrder = new ArrayList<>();
         this.random = new Random();
         this.turn = 0;
         this.finished = false;
@@ -70,9 +74,22 @@ public class TypingRaceEngine {
             if (config.isCaffeineModeEnabled() && turn <= 10) {
                 effectiveAccuracy += 0.08;
             }
+            if (typist.getSetup().hasEnergyDrink()) {
+                if (typist.getProgress() < getPassageLength() / 2) {
+                    effectiveAccuracy += 0.06;
+                } else {
+                    effectiveAccuracy -= 0.06;
+                }
+            }
             effectiveAccuracy = clamp(effectiveAccuracy);
 
-            boolean typedCorrectly = random.nextDouble() < effectiveAccuracy;
+            if (typist.isBurntOut()) {
+                typist.recoverFromBurnout();
+                continue;
+            }
+
+            double adjustedAccuracy = clamp(1.0 - ((1.0 - effectiveAccuracy) * typist.getSetup().getMistypeMultiplier()));
+            boolean typedCorrectly = random.nextDouble() < adjustedAccuracy;
             typist.registerKeystroke(typedCorrectly);
             if (typedCorrectly) {
                 typist.typeCharacter();
@@ -85,11 +102,35 @@ public class TypingRaceEngine {
                 typist.setJustMistyped(true);
             }
 
+            double burnoutChance = BASE_BURNOUT_CHANCE * effectiveAccuracy * effectiveAccuracy;
+            burnoutChance += typist.getSetup().getBurnoutRiskBonus();
+            if (config.isCaffeineModeEnabled() && turn > 10) {
+                burnoutChance += 0.05;
+            }
+            burnoutChance = clampChance(burnoutChance);
+            if (random.nextDouble() < burnoutChance) {
+                typist.incrementBurnoutCount();
+                typist.burnOut(typist.getSetup().getBurnoutDuration());
+                typist.setCurrentAccuracy(typist.getCurrentAccuracy() - 0.02);
+            }
+
             if (typist.getProgress() >= getPassageLength()) {
                 typist.markFinished(turn);
-                finished = true;
-                break;
+                finishOrder.add(typist);
             }
+        }
+
+        if (!finishOrder.isEmpty()) {
+            placeRemainingTypistsByProgress();
+            applyPostRaceAdjustments();
+            finished = true;
+            return;
+        }
+
+        if (turn >= MAX_TURNS) {
+            forceFinishByProgress();
+            applyPostRaceAdjustments();
+            finished = true;
         }
     }
 
@@ -97,18 +138,17 @@ public class TypingRaceEngine {
         return Math.max(0.0, Math.min(1.0, value));
     }
 
+    private double clampChance(double value) {
+        return Math.max(0.0, Math.min(0.70, value));
+    }
+
     /**
      * Builds a basic ordered results list for the Results tab.
      */
     public List<RaceResult> buildResults() {
-        List<GuiTypist> ordered = new ArrayList<>(typists);
-        ordered.sort(Comparator
-                .comparingInt(GuiTypist::getProgress).reversed()
-                .thenComparing(GuiTypist::getName));
-
         List<RaceResult> results = new ArrayList<>();
-        for (int i = 0; i < ordered.size(); i++) {
-            GuiTypist typist = ordered.get(i);
+        for (int i = 0; i < finishOrder.size(); i++) {
+            GuiTypist typist = finishOrder.get(i);
             int finishTurn = typist.getFinishTurn() > 0 ? typist.getFinishTurn() : Math.max(1, turn);
             double minutes = Math.max(0.01, (finishTurn * TURN_SECONDS) / 60.0);
             double wordsTyped = Math.min(typist.getProgress(), getPassageLength()) / 5.0;
@@ -129,5 +169,43 @@ public class TypingRaceEngine {
             ));
         }
         return results;
+    }
+
+    private void forceFinishByProgress() {
+        List<GuiTypist> ordered = new ArrayList<>(typists);
+        ordered.sort(Comparator
+                .comparingInt(GuiTypist::getProgress).reversed()
+                .thenComparing(GuiTypist::getName));
+        for (GuiTypist typist : ordered) {
+            if (!typist.isFinished()) {
+                typist.markFinished(turn);
+            }
+            if (!finishOrder.contains(typist)) {
+                finishOrder.add(typist);
+            }
+        }
+    }
+
+    private void placeRemainingTypistsByProgress() {
+        List<GuiTypist> remaining = new ArrayList<>();
+        for (GuiTypist typist : typists) {
+            if (!finishOrder.contains(typist)) {
+                remaining.add(typist);
+            }
+        }
+        remaining.sort(Comparator
+                .comparingInt(GuiTypist::getProgress).reversed()
+                .thenComparing(GuiTypist::getName));
+        for (GuiTypist typist : remaining) {
+            typist.markFinished(turn);
+            finishOrder.add(typist);
+        }
+    }
+
+    private void applyPostRaceAdjustments() {
+        if (!finishOrder.isEmpty()) {
+            GuiTypist winner = finishOrder.get(0);
+            winner.setCurrentAccuracy(winner.getCurrentAccuracy() + 0.02);
+        }
     }
 }
