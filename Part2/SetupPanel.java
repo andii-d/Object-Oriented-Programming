@@ -253,6 +253,7 @@ public class SetupPanel extends JPanel {
         private final JComboBox<String> colorCombo;
         private final JComboBox<TypingStyle> styleCombo;
         private final JComboBox<KeyboardType> keyboardCombo;
+        private final JComboBox<String> sponsorCombo;
         private final JCheckBox wristSupportBox;
         private final JCheckBox energyDrinkBox;
         private final JCheckBox noiseCancellingBox;
@@ -280,6 +281,7 @@ public class SetupPanel extends JPanel {
             JPanel row2 = new JPanel(new FlowLayout(FlowLayout.LEFT));
             styleCombo = new JComboBox<>(TypingStyle.values());
             keyboardCombo = new JComboBox<>(KeyboardType.values());
+            sponsorCombo = new JComboBox<>(SponsorPrizeManager.getAvailableSponsors().toArray(new String[0]));
             wristSupportBox = new JCheckBox("Wrist Support");
             energyDrinkBox = new JCheckBox("Energy Drink");
             noiseCancellingBox = new JCheckBox("Noise-Cancelling Headphones");
@@ -287,6 +289,8 @@ public class SetupPanel extends JPanel {
             row2.add(styleCombo);
             row2.add(new JLabel("Keyboard"));
             row2.add(keyboardCombo);
+            row2.add(new JLabel("Sponsor"));
+            row2.add(sponsorCombo);
             row2.add(wristSupportBox);
             row2.add(energyDrinkBox);
             row2.add(noiseCancellingBox);
@@ -303,6 +307,7 @@ public class SetupPanel extends JPanel {
             wristSupportBox.addActionListener(e -> updateSummary.run());
             energyDrinkBox.addActionListener(e -> updateSummary.run());
             noiseCancellingBox.addActionListener(e -> updateSummary.run());
+            sponsorCombo.addActionListener(e -> updateSummary.run());
             nameField.getDocument().addDocumentListener(simpleDocumentListener(updateSummary));
             refreshSummary();
         }
@@ -331,7 +336,8 @@ public class SetupPanel extends JPanel {
                     keyboardType,
                     wristSupportBox.isSelected(),
                     energyDrinkBox.isSelected(),
-                    noiseCancellingBox.isSelected()
+                    noiseCancellingBox.isSelected(),
+                    (String) sponsorCombo.getSelectedItem()
             );
         }
 
@@ -345,6 +351,7 @@ public class SetupPanel extends JPanel {
             colorCombo.setEnabled(enabled);
             styleCombo.setEnabled(enabled);
             keyboardCombo.setEnabled(enabled);
+            sponsorCombo.setEnabled(enabled);
             wristSupportBox.setEnabled(enabled);
             energyDrinkBox.setEnabled(enabled);
             noiseCancellingBox.setEnabled(enabled);
