@@ -21,21 +21,27 @@ public class TypingRaceGUI {
 }
 
 class TypingRaceFrame extends JFrame {
+    private final LeaderboardManager leaderboardManager;
     private final JTabbedPane tabs;
     private final SetupPanel setupPanel;
     private final RacePanel racePanel;
     private final ResultsPanel resultsPanel;
+    private final LeaderboardPanel leaderboardPanel;
+    private RaceConfig currentConfig;
 
     TypingRaceFrame() {
         super("Typing Race Simulator - Part 2");
+        this.leaderboardManager = new LeaderboardManager();
         this.tabs = new JTabbedPane();
         this.setupPanel = new SetupPanel(this::startRace);
         this.racePanel = new RacePanel();
         this.resultsPanel = new ResultsPanel(() -> tabs.setSelectedIndex(0));
+        this.leaderboardPanel = new LeaderboardPanel();
 
         tabs.addTab("Setup", setupPanel);
         tabs.addTab("Race", racePanel);
         tabs.addTab("Results", resultsPanel);
+        tabs.addTab("Leaderboard", leaderboardPanel);
 
         setLayout(new BorderLayout());
         add(tabs, BorderLayout.CENTER);
@@ -45,13 +51,16 @@ class TypingRaceFrame extends JFrame {
     }
 
     private void startRace(RaceConfig config) {
+        this.currentConfig = config;
         racePanel.startRace(new TypingRaceEngine(config), this::finishRace);
         tabs.setSelectedIndex(1);
     }
 
     private void finishRace(TypingRaceEngine engine) {
         List<RaceResult> results = engine.buildResults();
+        leaderboardManager.applyRaceResults(results, currentConfig.getSeatCount());
         resultsPanel.showResults(results);
+        leaderboardPanel.refresh(leaderboardManager);
         tabs.setSelectedIndex(2);
     }
 }

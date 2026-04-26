@@ -26,7 +26,7 @@ public class ResultsPanel extends JPanel {
         winnerLabel = new JLabel("Run a race to see results.");
         add(winnerLabel, BorderLayout.NORTH);
 
-        model = new DefaultTableModel(new Object[]{"Pos", "Typist", "WPM", "Accuracy %"}, 0) {
+        model = new DefaultTableModel(new Object[]{"Pos", "Typist", "WPM", "Accuracy %", "Points"}, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
@@ -56,7 +56,8 @@ public class ResultsPanel extends JPanel {
                     result.getFinishPosition(),
                     result.getName(),
                     format(result.getWpm()),
-                    format(result.getAccuracyPercent())
+                    format(result.getAccuracyPercent()),
+                    result.getRacePoints()
             });
         }
     }
