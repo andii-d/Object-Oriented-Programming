@@ -5,13 +5,24 @@ import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 
 /**
- * Entry point for the Part 2 GUI build.
+ * Entry point for the Part 2 Swing version.
+ *
+ * The spec asks for a startRaceGUI() method as the launch method, so both
+ * main() and external callers route through that method.
  */
 public class TypingRaceGUI {
+    /**
+     * Standard Java entry point.
+     *
+     * @param args command-line arguments (unused)
+     */
     public static void main(String[] args) {
         startRaceGUI();
     }
 
+    /**
+     * Starts the Swing UI on the Event Dispatch Thread.
+     */
     public static void startRaceGUI() {
         SwingUtilities.invokeLater(() -> {
             TypingRaceFrame frame = new TypingRaceFrame();
@@ -20,19 +31,33 @@ public class TypingRaceGUI {
     }
 }
 
+/**
+ * Main application window for the GUI typing race simulator.
+ *
+ * Tabs:
+ * 1) Setup
+ * 2) Race animation
+ * 3) Results
+ * 4) Leaderboard (Option A)
+ */
 class TypingRaceFrame extends JFrame {
     private final LeaderboardManager leaderboardManager;
-    private final JTabbedPane tabs;
     private final SetupPanel setupPanel;
     private final RacePanel racePanel;
     private final ResultsPanel resultsPanel;
     private final LeaderboardPanel leaderboardPanel;
+    private final JTabbedPane tabs;
+
     private RaceConfig currentConfig;
 
+    /**
+     * Builds all panels and wires navigation flow between them.
+     */
     TypingRaceFrame() {
-        super("Typing Race Simulator - Part 2");
+        super("Typing Race Simulator - Part 2 (Swing, Option A)");
         this.leaderboardManager = new LeaderboardManager();
         this.tabs = new JTabbedPane();
+
         this.setupPanel = new SetupPanel(this::startRace);
         this.racePanel = new RacePanel();
         this.resultsPanel = new ResultsPanel(() -> tabs.setSelectedIndex(0));
@@ -45,17 +70,31 @@ class TypingRaceFrame extends JFrame {
 
         setLayout(new BorderLayout());
         add(tabs, BorderLayout.CENTER);
-        setSize(1000, 650);
+        setSize(1250, 760);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
     }
 
+    /**
+     * Creates a new race engine from setup data and switches to the race tab.
+     *
+     * @param config race configuration from SetupPanel
+     */
     private void startRace(RaceConfig config) {
         this.currentConfig = config;
-        racePanel.startRace(new TypingRaceEngine(config, leaderboardManager), this::finishRace);
+        TypingRaceEngine engine = new TypingRaceEngine(config, leaderboardManager);
+        racePanel.startRace(engine, this::finishRace);
         tabs.setSelectedIndex(1);
     }
 
+    /**
+     * Finalises one completed race:
+     * - builds per-race metrics
+     * - updates cumulative Option A leaderboard data
+     * - refreshes results/leaderboard views
+     *
+     * @param engine completed engine containing final race state
+     */
     private void finishRace(TypingRaceEngine engine) {
         List<RaceResult> results = engine.buildResults();
         leaderboardManager.applyRaceResults(results, currentConfig.getSeatCount());
