@@ -16,7 +16,10 @@ public class LeaderboardPanel extends JPanel {
         setLayout(new BorderLayout(8, 8));
         setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
-        model = new DefaultTableModel(new Object[]{"Rank", "Name", "Points", "Best WPM", "Races"}, 0) {
+        model = new DefaultTableModel(
+                new Object[]{"Rank", "Name", "Title", "Points", "Best WPM", "Races", "Avg Accuracy %", "Burnouts", "Badges"},
+                0
+        ) {
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
@@ -31,9 +34,13 @@ public class LeaderboardPanel extends JPanel {
             model.addRow(new Object[]{
                     row.getRank(),
                     row.getName(),
+                    row.getTitle(),
                     row.getPoints(),
                     format(row.getBestWpm()),
-                    row.getRaces()
+                    row.getRaces(),
+                    format(row.getAvgAccuracy()),
+                    row.getTotalBurnouts(),
+                    row.getBadges().isEmpty() ? "-" : row.getBadges()
             });
         }
     }
