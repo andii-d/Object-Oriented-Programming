@@ -1,56 +1,108 @@
-# TypingRaceSimulator
+# Typing Race Simulator (ECS414U)
 
-Object Oriented Programming Project — ECS414U
+Java coursework project with:
+- **Part I:** textual typing race simulation (`Part1/`)
+- **Part II:** Swing GUI typing race simulation (`Part2/`)
+- **Part III:** Git workflow (branching + meaningful commit history)
 
 ## Project Structure
 
-```
+```text
 TypingRaceSimulator/
-├── Part1/    # Textual simulation (Java, command-line)
-└── Part2/    # GUI simulation (to be completed)
+├── .git/
+├── Part1/
+├── Part2/
+└── README.md
 ```
-
-## Part 1 — Textual Simulation
-
-### How to compile
-
-```bash
-cd Part1
-javac Typist.java TypingRace.java
-```
-
-### How to run
-
-The race is started by calling `startRace()` on a `TypingRace` object.
-A simple way to test this is to add a `main` method to `TypingRace`, for example:
-
-```java
-public static void main(String[] args) {
-    TypingRace race = new TypingRace(40);
-    race.addTypist(new Typist('①', "TURBOFINGERS", 0.85), 1);
-    race.addTypist(new Typist('②', "QWERTY_QUEEN",  0.60), 2);
-    race.addTypist(new Typist('③', "HUNT_N_PECK",   0.30), 3);
-    race.startRace();
-}
-```
-
-Then run:
-
-```bash
-java TypingRace
-```
-
-## Part 2 — GUI Simulation
-
-To be implemented as part of the coursework. Place all GUI-related source files in this folder. The graphical version is started by calling `startRaceGUI()`.
 
 ## Dependencies
 
-- Java Development Kit (JDK) 11 or higher
-- No external libraries required for Part 1
-- Part 2 may use Java Swing (included in standard JDK) or JavaFX
+- JDK 11+ (tested with standard `javac` / `java`)
+- No third-party libraries required
+- Swing is part of the standard JDK
 
-## Notes
+## Setup
 
-- All code should compile and run using standard command-line tools without any IDE-specific configuration.
-- The starter code in Part1 was originally written by Ty Posaurus. It contains known issues — finding and fixing them is part of the coursework.
+From repository root:
+
+```bash
+git clone <your-private-repo-url>
+cd TypingRaceSimulator
+```
+
+For Part II work (per spec), use the GUI branch:
+
+```bash
+git checkout -b gui-development
+```
+
+## Part I (Textual Version) — Compile & Run
+
+### Compile
+
+```bash
+javac Part1/*.java
+```
+
+### Run
+
+`TypingRace` does not ship with a fixed CLI `main` entry point. Start the race by constructing a `TypingRace` object and calling `startRace()` (for example from a temporary runner class, IDE runner, or a local `main` method), e.g.:
+
+```java
+TypingRace race = new TypingRace(40);
+race.addTypist(new Typist('①', "TURBOFINGERS", 0.85), 1);
+race.addTypist(new Typist('②', "QWERTY_QUEEN", 0.60), 2);
+race.addTypist(new Typist('③', "HUNT_N_PECK", 0.30), 3);
+race.startRace();
+```
+
+## Part II (GUI Version) — Compile & Run
+
+### Compile
+
+```bash
+javac Part2/*.java
+```
+
+### Run
+
+```bash
+java -cp Part2 TypingRaceGUI
+```
+
+## Usage Guidelines (Spec-Aligned)
+
+### Part I
+- Uses `Typist` and `TypingRace` core simulation mechanics:
+  - correct keystrokes progress forward
+  - mistypes slide backward
+  - burnout freezes typing temporarily
+  - winner receives a small post-race accuracy adjustment
+
+### Part II
+- Pre-race setup:
+  - passage selection (short/medium/long/custom)
+  - seat count (2–6)
+  - global modifiers (Autocorrect, Caffeine Mode, Night Shift, Rank Impact)
+- Typist customisation:
+  - typing style, keyboard type
+  - symbol/emoji and color
+  - accessories (wrist support, energy drink, noise-cancelling headphones)
+- Race visualisation:
+  - per-typist animated lane
+  - passage progress highlighting
+  - pause/resume controls
+- Post-race analytics:
+  - WPM, accuracy %, burnout count, accuracy change
+- Reward system (Option A):
+  - cumulative points leaderboard
+  - rank-based comparison
+  - race history per typist
+  - milestone badges
+
+## Git Requirements (Part III)
+
+- Keep `main` stable.
+- Implement GUI work on `gui-development`.
+- Use descriptive commit messages that explain *what* changed and *why*.
+- Merge `gui-development` back into `main` after GUI completion.
