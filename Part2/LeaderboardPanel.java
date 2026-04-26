@@ -1,5 +1,6 @@
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import javax.swing.BorderFactory;
@@ -9,6 +10,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextArea;
 import javax.swing.table.DefaultTableModel;
 
 /**
@@ -20,6 +22,8 @@ public class LeaderboardPanel extends JPanel {
     private final JComboBox<String> compareBCombo;
     private final JComboBox<String> metricCombo;
     private final JLabel compareResultLabel;
+    private final JComboBox<String> historyCombo;
+    private final JTextArea historyArea;
     private LeaderboardManager manager;
 
     public LeaderboardPanel() {
@@ -37,6 +41,8 @@ public class LeaderboardPanel extends JPanel {
         };
         add(new JScrollPane(new JTable(model)), BorderLayout.CENTER);
 
+        JPanel bottom = new JPanel(new BorderLayout(8, 8));
+
         JPanel comparePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
         compareACombo = new JComboBox<>();
         compareBCombo = new JComboBox<>();
@@ -51,7 +57,22 @@ public class LeaderboardPanel extends JPanel {
         comparePanel.add(metricCombo);
         comparePanel.add(compareButton);
         comparePanel.add(compareResultLabel);
-        add(comparePanel, BorderLayout.SOUTH);
+        bottom.add(comparePanel, BorderLayout.NORTH);
+
+        JPanel historyPanel = new JPanel(new BorderLayout(4, 4));
+        JPanel historyTop = new JPanel(new FlowLayout(FlowLayout.LEFT));
+        historyCombo = new JComboBox<>();
+        historyCombo.addActionListener(e -> refreshHistoryArea());
+        historyTop.add(new JLabel("History for"));
+        historyTop.add(historyCombo);
+        historyPanel.add(historyTop, BorderLayout.NORTH);
+
+        historyArea = new JTextArea(6, 50);
+        historyArea.setEditable(false);
+        historyPanel.add(new JScrollPane(historyArea), BorderLayout.CENTER);
+        bottom.add(historyPanel, BorderLayout.CENTER);
+
+        add(bottom, BorderLayout.SOUTH);
     }
 
     public void refresh(LeaderboardManager manager) {
@@ -71,6 +92,7 @@ public class LeaderboardPanel extends JPanel {
             });
         }
         refillTypistSelectors(manager.getTypistNames());
+        refreshHistoryArea();
     }
 
     private String format(double value) {
@@ -80,9 +102,11 @@ public class LeaderboardPanel extends JPanel {
     private void refillTypistSelectors(Set<String> names) {
         compareACombo.removeAllItems();
         compareBCombo.removeAllItems();
+        historyCombo.removeAllItems();
         for (String name : names) {
             compareACombo.addItem(name);
             compareBCombo.addItem(name);
+            historyCombo.addItem(name);
         }
     }
 
@@ -98,5 +122,31 @@ public class LeaderboardPanel extends JPanel {
         double firstValue = manager.getMetricValue(first, metric);
         double secondValue = manager.getMetricValue(second, metric);
         compareResultLabel.setText(first + ": " + format(firstValue) + " | " + second + ": " + format(secondValue));
+    }
+
+    private void refreshHistoryArea() {
+        historyArea.setText("");
+        if (manager == null || historyCombo.getSelectedItem() == null) {
+            return;
+        }
+        String name = (String) historyCombo.getSelectedItem();
+        List<LeaderboardManager.RaceHistory> history = manager.getHistory(name);
+        if (history.isEmpty()) {
+            historyArea.setText("No races recorded yet for " + name + ".");
+            return;
+        }
+
+        StringBuilder builder = new StringBuilder();
+        int raceNumber = 1;
+        for (LeaderboardManager.RaceHistory item : history) {
+            builder.append("Race ").append(raceNumber++).append(": ")
+                    .append("Pos ").append(item.getFinishPosition())
+                    .append(", WPM ").append(format(item.getWpm()))
+                    .append(", Accuracy ").append(format(item.getAccuracyPercent())).append("%")
+                    .append(", Burnouts ").append(item.getBurnoutCount())
+                    .append(", Points ").append(item.getPoints())
+                    .append('\n');
+        }
+        historyArea.setText(builder.toString());
     }
 }
