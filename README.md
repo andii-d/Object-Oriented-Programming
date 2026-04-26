@@ -94,11 +94,17 @@ java -cp Part2 TypingRaceGUI
   - pause/resume controls
 - Post-race analytics:
   - WPM, accuracy %, burnout count, accuracy change
-- Reward system (Option A):
-  - cumulative points leaderboard
-  - rank-based comparison
-  - race history per typist
-  - milestone badges
+- Reward systems:
+  - **Option A:**
+    - cumulative points leaderboard
+    - rank-based comparison
+    - race history per typist
+    - milestone badges
+  - **Option B:**
+    - sponsor deals selected during setup
+    - post-race earnings algorithm (placement, performance, penalties, sponsor bonus)
+    - cumulative financial leaderboard
+    - spendable upgrades (accuracy and burnout recovery improvements for future races)
 
 ## Git Requirements (Part III)
 

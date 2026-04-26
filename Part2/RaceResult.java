@@ -18,6 +18,8 @@ public class RaceResult {
     private final double startingAccuracy;
     private final double finalAccuracy;
     private int racePoints;
+    private int raceEarnings;
+    private int sponsorBonus;
     private List<String> newBadges;
 
     /**
@@ -42,6 +44,8 @@ public class RaceResult {
         this.startingAccuracy = startingAccuracy;
         this.finalAccuracy = finalAccuracy;
         this.racePoints = 0;
+        this.raceEarnings = 0;
+        this.sponsorBonus = 0;
         this.newBadges = new ArrayList<>();
     }
 
@@ -120,6 +124,34 @@ public class RaceResult {
      */
     public void setRacePoints(int racePoints) {
         this.racePoints = racePoints;
+    }
+
+    /**
+     * @return earnings awarded for this race (Option B)
+     */
+    public int getRaceEarnings() {
+        return raceEarnings;
+    }
+
+    /**
+     * Sets earnings awarded for this race.
+     */
+    public void setRaceEarnings(int raceEarnings) {
+        this.raceEarnings = raceEarnings;
+    }
+
+    /**
+     * @return sponsor bonus included in race earnings
+     */
+    public int getSponsorBonus() {
+        return sponsorBonus;
+    }
+
+    /**
+     * Sets sponsor bonus for this race.
+     */
+    public void setSponsorBonus(int sponsorBonus) {
+        this.sponsorBonus = sponsorBonus;
     }
 
     /**

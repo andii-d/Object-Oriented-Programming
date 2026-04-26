@@ -33,7 +33,7 @@ public class ResultsPanel extends JPanel {
         add(winnerLabel, BorderLayout.NORTH);
 
         tableModel = new DefaultTableModel(
-                new Object[]{"Pos", "Typist", "WPM", "Accuracy %", "Burnouts", "Acc Change", "Points", "New Badges"},
+                new Object[]{"Pos", "Typist", "WPM", "Accuracy %", "Burnouts", "Acc Change", "Points", "Coins", "Sponsor Bonus", "New Badges"},
                 0
         ) {
             @Override
@@ -68,6 +68,7 @@ public class ResultsPanel extends JPanel {
                 "Winner: " + winner.getName() + " (" + winner.getSymbol() + ")"
                         + " | Final accuracy " + format(winner.getFinalAccuracy())
                         + " (" + signed(winner.getAccuracyDelta()) + ")"
+                        + " | Coins " + winner.getRaceEarnings()
         );
 
         for (RaceResult result : results) {
@@ -79,6 +80,8 @@ public class ResultsPanel extends JPanel {
                     result.getBurnoutCount(),
                     signed(result.getAccuracyDelta()),
                     result.getRacePoints(),
+                    result.getRaceEarnings(),
+                    result.getSponsorBonus(),
                     result.getNewBadges().isEmpty() ? "-" : String.join(", ", result.getNewBadges())
             });
         }

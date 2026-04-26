@@ -15,6 +15,7 @@ public class TypistSetup {
     private final boolean wristSupport;
     private final boolean energyDrink;
     private final boolean noiseCancellingHeadphones;
+    private final String sponsorName;
 
     /**
      * Creates one typist setup entry.
@@ -27,6 +28,32 @@ public class TypistSetup {
      * @param wristSupport true if wrist support accessory is enabled
      * @param energyDrink true if energy drink accessory is enabled
      * @param noiseCancellingHeadphones true if headphones accessory is enabled
+     * @param sponsorName sponsor selected for Option B rewards
+     */
+    public TypistSetup(
+            String name,
+            String symbol,
+            Color color,
+            TypingStyle typingStyle,
+            KeyboardType keyboardType,
+            boolean wristSupport,
+            boolean energyDrink,
+            boolean noiseCancellingHeadphones,
+            String sponsorName
+    ) {
+        this.name = (name == null || name.trim().isEmpty()) ? "Typist" : name.trim();
+        this.symbol = (symbol == null || symbol.trim().isEmpty()) ? "⌨" : symbol.trim();
+        this.color = color == null ? Color.BLUE : color;
+        this.typingStyle = typingStyle == null ? TypingStyle.TOUCH_TYPIST : typingStyle;
+        this.keyboardType = keyboardType == null ? KeyboardType.MEMBRANE : keyboardType;
+        this.wristSupport = wristSupport;
+        this.energyDrink = energyDrink;
+        this.noiseCancellingHeadphones = noiseCancellingHeadphones;
+        this.sponsorName = (sponsorName == null || sponsorName.trim().isEmpty()) ? "None" : sponsorName.trim();
+    }
+
+    /**
+     * Backward-compatible constructor when no sponsor is explicitly supplied.
      */
     public TypistSetup(
             String name,
@@ -38,14 +65,7 @@ public class TypistSetup {
             boolean energyDrink,
             boolean noiseCancellingHeadphones
     ) {
-        this.name = (name == null || name.trim().isEmpty()) ? "Typist" : name.trim();
-        this.symbol = (symbol == null || symbol.trim().isEmpty()) ? "⌨" : symbol.trim();
-        this.color = color == null ? Color.BLUE : color;
-        this.typingStyle = typingStyle == null ? TypingStyle.TOUCH_TYPIST : typingStyle;
-        this.keyboardType = keyboardType == null ? KeyboardType.MEMBRANE : keyboardType;
-        this.wristSupport = wristSupport;
-        this.energyDrink = energyDrink;
-        this.noiseCancellingHeadphones = noiseCancellingHeadphones;
+        this(name, symbol, color, typingStyle, keyboardType, wristSupport, energyDrink, noiseCancellingHeadphones, "None");
     }
 
     /**
@@ -105,6 +125,13 @@ public class TypistSetup {
     }
 
     /**
+     * @return sponsor selected for Option B sponsor deals
+     */
+    public String getSponsorName() {
+        return sponsorName;
+    }
+
+    /**
      * Calculates base accuracy from style + keyboard with clamping.
      *
      * @return base accuracy in range [0.0, 1.0]
@@ -147,12 +174,13 @@ public class TypistSetup {
      */
     public String getImpactSummary() {
         return String.format(
-                "Base accuracy %.2f | Burnout risk %+.2f | Burnout turns %d%s%s",
+                "Base accuracy %.2f | Burnout risk %+.2f | Burnout turns %d%s%s | Sponsor %s",
                 calculateBaseAccuracy(),
                 getBurnoutRiskBonus(),
                 getBurnoutDuration(),
                 energyDrink ? " | Energy Drink enabled" : "",
-                noiseCancellingHeadphones ? " | Noise-cancelling enabled" : ""
+                noiseCancellingHeadphones ? " | Noise-cancelling enabled" : "",
+                sponsorName
         );
     }
 

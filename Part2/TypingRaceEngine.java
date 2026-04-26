@@ -1,6 +1,8 @@
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 /**
@@ -24,6 +26,7 @@ public class TypingRaceEngine {
     private final RaceConfig config;
     private final List<GuiTypist> typists;
     private final List<GuiTypist> finishOrder;
+    private final Map<String, Integer> burnoutDurationReductionByName;
     private final Random random;
     private int turn;
     private boolean finished;
@@ -35,9 +38,25 @@ public class TypingRaceEngine {
      * @param leaderboardManager leaderboard data used for optional rank impact
      */
     public TypingRaceEngine(RaceConfig config, LeaderboardManager leaderboardManager) {
+        this(config, leaderboardManager, null);
+    }
+
+    /**
+     * Creates a new race from the setup configuration with optional Option B upgrades.
+     *
+     * @param config race setup choices
+     * @param leaderboardManager leaderboard data used for optional rank impact
+     * @param sponsorPrizeManager sponsor and upgrade data (nullable)
+     */
+    public TypingRaceEngine(
+            RaceConfig config,
+            LeaderboardManager leaderboardManager,
+            SponsorPrizeManager sponsorPrizeManager
+    ) {
         this.config = config;
         this.typists = new ArrayList<>();
         this.finishOrder = new ArrayList<>();
+        this.burnoutDurationReductionByName = new HashMap<>();
         this.random = new Random();
         this.turn = 0;
         this.finished = false;
@@ -50,6 +69,15 @@ public class TypingRaceEngine {
             }
             if (config.isRankImpactEnabled()) {
                 accuracy += leaderboardManager.getRankAdjustment(setup.getName());
+            }
+            if (sponsorPrizeManager != null) {
+                accuracy += sponsorPrizeManager.getAccuracyUpgradeBonus(setup.getName());
+                burnoutDurationReductionByName.put(
+                        setup.getName(),
+                        sponsorPrizeManager.getBurnoutDurationReduction(setup.getName())
+                );
+            } else {
+                burnoutDurationReductionByName.put(setup.getName(), 0);
             }
             typists.add(new GuiTypist(setup, clamp(accuracy)));
         }
@@ -122,7 +150,9 @@ public class TypingRaceEngine {
 
             if (random.nextDouble() < burnoutChance) {
                 typist.incrementBurnoutCount();
-                typist.burnOut(typist.getSetup().getBurnoutDuration());
+                int reduction = burnoutDurationReductionByName.getOrDefault(typist.getName(), 0);
+                int burnoutDuration = Math.max(1, typist.getSetup().getBurnoutDuration() - reduction);
+                typist.burnOut(burnoutDuration);
                 typist.setCurrentAccuracy(typist.getCurrentAccuracy() - 0.02);
             }
 

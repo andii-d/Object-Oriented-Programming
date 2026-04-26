@@ -39,13 +39,16 @@ public class TypingRaceGUI {
  * 2) Race animation
  * 3) Results
  * 4) Leaderboard (Option A)
+ * 5) Sponsorship (Option B)
  */
 class TypingRaceFrame extends JFrame {
     private final LeaderboardManager leaderboardManager;
+    private final SponsorPrizeManager sponsorPrizeManager;
     private final SetupPanel setupPanel;
     private final RacePanel racePanel;
     private final ResultsPanel resultsPanel;
     private final LeaderboardPanel leaderboardPanel;
+    private final SponsorPanel sponsorPanel;
     private final JTabbedPane tabs;
 
     private RaceConfig currentConfig;
@@ -54,19 +57,22 @@ class TypingRaceFrame extends JFrame {
      * Builds all panels and wires navigation flow between them.
      */
     TypingRaceFrame() {
-        super("Typing Race Simulator - Part 2 (Swing, Option A)");
+        super("Typing Race Simulator - Part 2 (Swing, Option A + Option B)");
         this.leaderboardManager = new LeaderboardManager();
+        this.sponsorPrizeManager = new SponsorPrizeManager();
         this.tabs = new JTabbedPane();
 
         this.setupPanel = new SetupPanel(this::startRace);
         this.racePanel = new RacePanel();
         this.resultsPanel = new ResultsPanel(() -> tabs.setSelectedIndex(0));
         this.leaderboardPanel = new LeaderboardPanel();
+        this.sponsorPanel = new SponsorPanel();
 
         tabs.addTab("Setup", setupPanel);
         tabs.addTab("Race", racePanel);
         tabs.addTab("Results", resultsPanel);
         tabs.addTab("Leaderboard", leaderboardPanel);
+        tabs.addTab("Sponsorship", sponsorPanel);
 
         setLayout(new BorderLayout());
         add(tabs, BorderLayout.CENTER);
@@ -82,7 +88,8 @@ class TypingRaceFrame extends JFrame {
      */
     private void startRace(RaceConfig config) {
         this.currentConfig = config;
-        TypingRaceEngine engine = new TypingRaceEngine(config, leaderboardManager);
+        sponsorPrizeManager.assignSponsors(config.getTypists());
+        TypingRaceEngine engine = new TypingRaceEngine(config, leaderboardManager, sponsorPrizeManager);
         racePanel.startRace(engine, this::finishRace);
         tabs.setSelectedIndex(1);
     }
@@ -98,8 +105,10 @@ class TypingRaceFrame extends JFrame {
     private void finishRace(TypingRaceEngine engine) {
         List<RaceResult> results = engine.buildResults();
         leaderboardManager.applyRaceResults(results, currentConfig.getSeatCount());
+        sponsorPrizeManager.applyRaceResults(results, currentConfig.getSeatCount());
         resultsPanel.showResults(results);
         leaderboardPanel.refresh(leaderboardManager);
+        sponsorPanel.refresh(sponsorPrizeManager);
         tabs.setSelectedIndex(2);
     }
 }
