@@ -52,7 +52,7 @@ class TypingRaceFrame extends JFrame {
 
     private void startRace(RaceConfig config) {
         this.currentConfig = config;
-        racePanel.startRace(new TypingRaceEngine(config), this::finishRace);
+        racePanel.startRace(new TypingRaceEngine(config, leaderboardManager), this::finishRace);
         tabs.setSelectedIndex(1);
     }
 

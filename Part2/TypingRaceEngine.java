@@ -20,7 +20,7 @@ public class TypingRaceEngine {
     private int turn;
     private boolean finished;
 
-    public TypingRaceEngine(RaceConfig config) {
+    public TypingRaceEngine(RaceConfig config, LeaderboardManager leaderboardManager) {
         this.config = config;
         this.typists = new ArrayList<>();
         this.finishOrder = new ArrayList<>();
@@ -33,6 +33,9 @@ public class TypingRaceEngine {
             double startingAccuracy = setup.calculateBaseAccuracy();
             if (config.isNightShiftEnabled()) {
                 startingAccuracy -= 0.05;
+            }
+            if (config.isRankImpactEnabled()) {
+                startingAccuracy += leaderboardManager.getRankAdjustment(setup.getName());
             }
             typists.add(new GuiTypist(setup, clamp(startingAccuracy)));
         }

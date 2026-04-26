@@ -126,6 +126,38 @@ public class LeaderboardManager {
         }
     }
 
+    public double getRankAdjustment(String typistName) {
+        List<LeaderboardEntry> sorted = new ArrayList<>(entries.values());
+        sorted.sort((left, right) -> {
+            if (left.totalPoints != right.totalPoints) {
+                return Integer.compare(right.totalPoints, left.totalPoints);
+            }
+            if (Double.compare(left.bestWpm, right.bestWpm) != 0) {
+                return Double.compare(right.bestWpm, left.bestWpm);
+            }
+            return left.name.compareTo(right.name);
+        });
+        if (sorted.isEmpty()) {
+            return 0.0;
+        }
+        for (int i = 0; i < sorted.size(); i++) {
+            if (sorted.get(i).name.equals(typistName)) {
+                int rank = i + 1;
+                if (rank == 1) {
+                    return -0.02;
+                }
+                if (rank <= 3) {
+                    return -0.01;
+                }
+                if (rank == sorted.size()) {
+                    return 0.02;
+                }
+                return 0.01;
+            }
+        }
+        return 0.0;
+    }
+
     public static class LeaderboardRow {
         private final int rank;
         private final String name;
