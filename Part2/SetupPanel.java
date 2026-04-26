@@ -49,6 +49,7 @@ public class SetupPanel extends JPanel {
     private final JCheckBox autocorrectCheckBox;
     private final JCheckBox caffeineCheckBox;
     private final JCheckBox nightShiftCheckBox;
+    private final JCheckBox rankImpactCheckBox;
     private final List<TypistRow> typistRows;
 
     public SetupPanel(RaceStartListener listener) {
@@ -99,9 +100,11 @@ public class SetupPanel extends JPanel {
         autocorrectCheckBox = new JCheckBox("Autocorrect");
         caffeineCheckBox = new JCheckBox("Caffeine Mode");
         nightShiftCheckBox = new JCheckBox("Night Shift");
+        rankImpactCheckBox = new JCheckBox("Rank Impact");
         modifiersPanel.add(autocorrectCheckBox);
         modifiersPanel.add(caffeineCheckBox);
         modifiersPanel.add(nightShiftCheckBox);
+        modifiersPanel.add(rankImpactCheckBox);
         gbc.gridx = 1;
         gbc.weightx = 1.0;
         form.add(modifiersPanel, gbc);
@@ -171,7 +174,7 @@ public class SetupPanel extends JPanel {
                 autocorrectCheckBox.isSelected(),
                 caffeineCheckBox.isSelected(),
                 nightShiftCheckBox.isSelected(),
-                false,
+                rankImpactCheckBox.isSelected(),
                 typists
         );
         listener.onRaceStart(config);
