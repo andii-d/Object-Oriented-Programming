@@ -138,15 +138,32 @@ public class LeaderboardPanel extends JPanel {
 
         StringBuilder builder = new StringBuilder();
         int raceNumber = 1;
+        Double previousWpm = null;
+        Double previousAccuracy = null;
         for (LeaderboardManager.RaceHistory item : history) {
             builder.append("Race ").append(raceNumber++).append(": ")
                     .append("Pos ").append(item.getFinishPosition())
-                    .append(", WPM ").append(format(item.getWpm()))
+                    .append(", WPM ").append(format(item.getWpm())).append(trend(item.getWpm(), previousWpm))
                     .append(", Accuracy ").append(format(item.getAccuracyPercent())).append("%")
+                    .append(trend(item.getAccuracyPercent(), previousAccuracy))
                     .append(", Burnouts ").append(item.getBurnoutCount())
                     .append(", Points ").append(item.getPoints())
                     .append('\n');
+            previousWpm = item.getWpm();
+            previousAccuracy = item.getAccuracyPercent();
         }
         historyArea.setText(builder.toString());
+    }
+
+    private String trend(double current, Double previous) {
+        if (previous == null) {
+            return " (baseline)";
+        }
+        double delta = current - previous;
+        if (Math.abs(delta) < 0.01) {
+            return " (flat)";
+        }
+        String direction = delta > 0 ? "up " : "down ";
+        return " (" + direction + String.format(Locale.US, "%+.2f", delta) + ")";
     }
 }
