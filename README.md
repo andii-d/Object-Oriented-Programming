@@ -26,14 +26,8 @@ TypingRaceSimulator/
 From repository root:
 
 ```bash
-git clone <your-private-repo-url>
+git clone https://github.com/andii-d/TypingRaceSimulator.git
 cd TypingRaceSimulator
-```
-
-For Part II work (per spec), use the GUI branch:
-
-```bash
-git checkout -b gui-development
 ```
 
 ## Part I (Textual Version) — Compile & Run
